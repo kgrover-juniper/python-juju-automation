@@ -1,8 +1,8 @@
 # Python juju-auto-deployment
 Required files:
-1. juju-python-deployment.go
+1. juju-python-deployment.py
 2. deploy-contrail.sh
-3. Atleast one bundle yaml file: contrail-docker-bundle-queens.yaml or contrail-docker-bundle-ussuri.yaml or contrail-docker-bundle-train.yaml 
+3. Modify bundle yaml file(s): contrail-docker-bundle-queens.yaml or contrail-docker-bundle-ussuri.yaml or contrail-docker-bundle-train.yaml 
 
 
 Command line execution:
@@ -10,7 +10,7 @@ Command line execution:
 > Deploy from inside tf-charms
 
 ```sh
-$ python juju-python-deployment.py queens 2008.12
+$ python juju-python-deployment.py -u bionic -o ussuri -c 2011.98
 ```
 
  
