@@ -1,31 +1,31 @@
-series: bionic
+series: focal
+variables:
+  mgmt: &mgmt mgmt
 services:
   ubuntu:
-    charm: cs:bionic/ubuntu
-    num_units: 2
+    charm: cs:focal/ubuntu
+    bindings:
+      "": *mgmt
+    num_units: 6
     to:
       - "1"
       - "2"
-  ubuntu-csn:
-    charm: cs:bionic/ubuntu
-    num_units: 1
-    to: 
       - "3"
-  contrail-agent-csn:
-    charm: ./contrail-agent
-    options:
-      docker-registry: "svl-artifactory.juniper.net/contrail-nightly"
-      docker-registry-insecure: "true"
-      image-tag: "2005.66"
-      vhost-gateway: auto
-      csn-mode: tsn-no-forwarding
+      - "4"
+      - "5"
+      - "6"
   ntp:
-    charm: cs:bionic/ntp
+    charm: cs:focal/ntp-41
+    bindings:
+      "": *mgmt
     num_units: 0
     options:
       source: "10.84.5.101"
-  mysql: #TO ADD MEMEORY AND CPU CONSTRAINTS TO MYSQL
+  mysql:
     charm: cs:bionic/percona-cluster
+    bindings:
+      "": *mgmt
+    series: bionic
     options:
       dataset-size: 15%
       max-connections: 10000
@@ -34,110 +34,149 @@ services:
     num_units: 1
     to: [ "lxd:1" ]
   rabbitmq-server:
-    charm: cs:bionic/rabbitmq-server
+    charm: cs:focal/rabbitmq-server
+    bindings:
+      "": *mgmt
     num_units: 1
     to: [ "lxd:1" ]
   heat:
-    charm: cs:bionic/heat
+    charm: cs:focal/heat
+    bindings:
+      "": *mgmt
     expose: true
     num_units: 1
     options:
-            # region: Juniper
-    to: [ "2" ]
+      openstack-origin: distro
+      region: RegionOne
+    to: [ "lxd:1" ]
   keystone:
-    charm: cs:bionic/keystone
+    charm: cs:focal/keystone
+    bindings:
+      "": *mgmt
     expose: true
     options:
       preferred-api-version: 3
       admin-password: password
       admin-role: admin
+      openstack-origin: distro
+      region: RegionOne
       #region: Juniper
     num_units: 1
     to: [ "lxd:1" ]
   nova-cloud-controller:
-    charm: cs:bionic/nova-cloud-controller
+    charm: cs:focal/nova-cloud-controller
+    bindings:
+      "": *mgmt
     expose: true
     options:
       network-manager: Neutron
+      openstack-origin: distro
+      region: RegionOne
       #region: Juniper
     num_units: 1
     to: [ "lxd:1" ]
   neutron-api:
-    charm: cs:bionic/neutron-api
-    series: bionic
+    charm: cs:focal/neutron-api
+    bindings:
+      "": *mgmt
+    series: focal
     expose: true
     options:
       manage-neutron-plugin-legacy-mode: false
+      openstack-origin: distro
+      region: RegionOne
       #region: Juniper
     num_units: 1
-    to: [ "2" ]
+    to: [ "lxd:1" ]
   glance:
-    charm: cs:bionic/glance
+    charm: cs:focal/glance
+    bindings:
+      "": *mgmt
     expose: true
     num_units: 1
     options:
+      openstack-origin: distro
+      region: RegionOne
     #region: Juniper
     to: [ "lxd:1" ]
   openstack-dashboard:
-    charm: cs:bionic/openstack-dashboard
+    charm: cs:focal/openstack-dashboard
+    bindings:
+      "": *mgmt
     expose: true
     num_units: 1
+    options:
+      openstack-origin: distro
     to: [ "lxd:1" ]
   nova-compute:
-    charm: cs:bionic/nova-compute
+    charm: cs:focal/nova-compute
+    bindings:
+      "": *mgmt
     expose: true
-    num_units: 1
-    to: [ "2" ]
+    num_units: 3
+    options:
+      openstack-origin: distro
+    to: [ "4","5","6" ]
   contrail-openstack:
     charm: ./contrail-openstack
+    bindings:
+      "": *mgmt
     expose: true
-    series: bionic
+    series: focal
     num_units: 0
     options:
       docker-registry: "svl-artifactory.juniper.net/contrail-nightly"
       docker-registry-insecure: "true"
-      image-tag: "2005.66"
+      image-tag: "2011.138-ubi"
   contrail-agent:
     charm: ./contrail-agent
+    bindings:
+      "": *mgmt
     expose: true
     num_units: 0
-    series: bionic
+    series: focal
     options:
       log-level: "SYS_DEBUG"
       docker-registry: "svl-artifactory.juniper.net/contrail-nightly"
       docker-registry-insecure: "true"
-      image-tag: "2005.66"
+      image-tag: "2011.138-ubi"
   contrail-analytics:
     charm: ./contrail-analytics
+    bindings:
+      "": *mgmt
     expose: true
-    num_units: 1
-    series: bionic
+    num_units: 3
+    series: focal
     options:
-      min-cluster-size: 1
+      min-cluster-size: 3
       log-level: "SYS_DEBUG"
       docker-registry: "svl-artifactory.juniper.net/contrail-nightly"
       docker-registry-insecure: "true"
-      image-tag: "2005.66"
-    to: [ "1" ]
+      image-tag: "2011.138-ubi"
+    to: [ "1","2","3" ]
   contrail-analyticsdb:
     charm: ./contrail-analyticsdb
+    bindings:
+      "": *mgmt
     expose: true
-    num_units: 1
-    series: bionic
+    num_units: 3
+    series: focal
     options:
-      min-cluster-size: 1
+      min-cluster-size: 3
       log-level: "SYS_DEBUG"
       cassandra-minimum-diskgb: "4"
       cassandra-jvm-extra-opts: "-Xms4g -Xmx4g"
       docker-registry: "svl-artifactory.juniper.net/contrail-nightly"
       docker-registry-insecure: "true"
-      image-tag: "2005.66"
-    to: [ "1"]
+      image-tag: "2011.138-ubi"
+    to: [ "1","2","3" ]
   contrail-controller:
     charm: ./contrail-controller
+    bindings:
+      "": *mgmt
     expose: true
-    num_units: 1
-    series: bionic
+    num_units: 3
+    series: focal
     options:
       log-level: "SYS_DEBUG"
       cassandra-minimum-diskgb: "4"
@@ -145,27 +184,43 @@ services:
       docker-registry: "svl-artifactory.juniper.net/contrail-nightly"
       docker-registry-insecure: "true"
       #data-network: eno2
-      min-cluster-size: 1
-      image-tag: "2005.66"
-    to: [ "1"]
+      min-cluster-size: 3
+      image-tag: "2011.138-ubi"
+    to: [ "1","2","3" ]
   contrail-keystone-auth:
     charm: ./contrail-keystone-auth
+    bindings:
+      "": *mgmt
     expose: true
-    series: bionic
+    series: focal
     num_units: 1
     to: [ "lxd:1" ]
+  placement:
+    charm: cs:focal/placement
+    bindings:
+      "": *mgmt
+    expose: true
+    num_units: 1
+    options:
+      openstack-origin: distro
+      region: RegionOne
+    to: [ "lxd:1" ]
   easyrsa:
-    #charm: cs:bionic/easyrsa
-    charm: cs:~containers/easyrsa-278
+    #charm: cs:focal/easyrsa
+    charm: cs:~containers/easyrsa
+    bindings:
+      "": *mgmt
     num_units: 1
     to: [ "lxd:1" ]
 relations:
   # openstack
   - [ "ubuntu", "ntp" ]
-  - [ "ubuntu-csn", "ntp" ]
   - [ "keystone", "mysql" ]
   - [ "glance", "mysql" ]
   - [ "glance", "keystone" ]
+  - [ "placement", "mysql" ]
+  - [ "placement", "keystone" ]
+  - [ "placement", "nova-cloud-controller" ]
   - [ "nova-cloud-controller", "keystone" ]
   - [ "nova-cloud-controller", "glance" ]
   - [ "nova-cloud-controller:shared-db", "mysql:shared-db" ]
@@ -183,9 +238,7 @@ relations:
   - [ "heat", "keystone" ]
 
   #contrail
-  - [ "ubuntu-csn", "contrail-agent-csn" ]
   - [ "contrail-controller", "contrail-agent" ]
-  - [ "contrail-controller", "contrail-agent-csn" ]
   - [ "contrail-keystone-auth", "keystone" ]
   - [ "contrail-controller", "contrail-keystone-auth" ]
   - [ "contrail-analytics", "contrail-analyticsdb" ]
@@ -200,7 +253,6 @@ relations:
   - [ "easyrsa:client", "contrail-analytics" ]
   - [ "easyrsa:client", "contrail-analyticsdb" ]
   - [ "easyrsa:client", "contrail-agent" ] #Contrail agent charm supports relation to easyrsa charm to obtain certificates for XMPP and Sandesh connections
-  - [ "easyrsa:client", "contrail-agent-csn" ] #Contrail agent charm supports relation to easyrsa charm to obtain certificates for XMPP and Sandesh connections
 
   - - easyrsa:client
     - contrail-controller:tls-certificates
@@ -210,15 +262,22 @@ relations:
     - contrail-analyticsdb:tls-certificates
   - - easyrsa:client
     - contrail-agent:tls-certificates
-  - - easyrsa:client
-    - contrail-agent-csn:tls-certificates
 machines:
   "1":
-    series: bionic
-    constraints: tags=contrail-controller
+    series: focal
+    constraints: tags=contrail-controller-1
   "2":
-    series: bionic
-    constraints: tags=compute
+    series: focal
+    constraints: tags=contrail-controller-2
   "3":
-    series: bionic
-    constraints: tags=csn
+    series: focal
+    constraints: tags=contrail-controller-3
+  "4":
+    series: focal
+    constraints: tags=compute-1
+  "5":
+    series: focal
+    constraints: tags=compute-2
+  "6":
+    series: focal
+    constraints: tags=compute-3

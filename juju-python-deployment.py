@@ -14,15 +14,17 @@ class Deploy(object):
         self.contrail = contrail
 
     def juju_deployment(self):
-        global start,end,message
+        global start,end,message,os
+        os="18.04" if self.ubuntu=="bionic" else os="20.04"
         start = datetime.now()
         deploy_script = subprocess.call(["./deploy-contrail.sh", self.ubuntu, self.openstack, self.contrail], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         return_code, return_message = self.verify_deployment()
         end = datetime.now()
         if return_code == -1:
-            message = return_message + "Failed deployment"
+            message = return_message + "Deployment failed"
         else:
-            message = return_message + "Successfully deployed"
+            message = return_message + "Deployement successful"
+        message += self.verify_os()
 
     def verify_deployment(self):
         tries = 0
@@ -41,6 +43,15 @@ class Deploy(object):
             return -1,"Tries Expired, "
         else:
             return 0,""
+    
+    def verify_os(self):
+        c1 = subprocess.Popen(["/snap/bin/juju", "show-unit", "ubuntu/0"],stdout=subprocess.PIPE)
+        c2 = subprocess.Popen(["grep", "version"],stdin=c1.stdout,stdout=subprocess.PIPE)
+        version = c2.communicate()[0]
+        if os not in version:
+            return ", os-version ERROR"
+        else:
+            return ", os-version verified"
 
     def write_result(self):
         result = "\nJuju deployment " + str(self.ubuntu) + " " + str(self.openstack) + " " + str(self.contrail) +  "\n" + message
